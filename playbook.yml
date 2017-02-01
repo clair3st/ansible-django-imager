@@ -1,0 +1,64 @@
+---
+- hosts: us-west-2
+  remote_user: ubuntu
+
+  tasks:
+    - name: Update the Ubuntu machine with all the latest stuff
+      apt: update_cache=yes
+      become: yes
+      become_method: sudo
+
+    - name: Upgrade the Ubuntu machine with all the latest stuff
+      apt: upgrade_cache=yes
+      become: yes
+      become_method: sudo
+
+    - name: Install Basic Unix-level Services
+      apt: name={{ item }} state=latest
+      become: yes
+      become_method: sudo
+      with_items:
+        - build-essential
+        - python-dev
+        - nginx
+        - python3
+        - python3-pip
+        - python3.4-venv
+        - git
+        - gunicorn
+
+    - name: Clone the Imager App to the Home Directory
+      git: clone=yes repo=https://github.com/clair3st/django-imager.git dest=/home/ubuntu/ version=deployment
+
+    - name: Create a virtual environment in the Imager app repo
+      command: python3 -m venv ENV
+    
+    - name: Activate virtual environment in the Imager app repo
+      command: source ENV/bin/activate
+  
+    - name: Install imager to the virtualenv
+      pip: install -r requirements.pip
+
+    - name: Register the old default file
+      stat: path=/etc/nginx/sites-available/default.old
+      register: default_stat
+
+    - name: Rename old default file
+      command: mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.old
+      when: not default_stat.stat.exists
+
+    - name: Create a new default file for nginx
+      template: src=simple_nginx_config dest=/etc/nginx/sites-available/default
+      become: yes
+      become_method: sudo
+
+    - name: Restart nginx service
+      service: name=nginx state=restarted
+      become: yes
+      become_method: sudo
+
+    - name: Copy upstart script into /etc/init
+      template: src=imagersite.conf dest=/etc/init/imagersite.conf
+
+    - name: Restart the imager upstart job
+      service: name=imagersite state=restarted
