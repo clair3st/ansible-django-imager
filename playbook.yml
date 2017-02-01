@@ -9,7 +9,7 @@
       become_method: sudo
 
     - name: Upgrade the Ubuntu machine with all the latest stuff
-      apt: upgrade_cache=yes
+      apt: upgrade=yes
       become: yes
       become_method: sudo
 
@@ -22,22 +22,26 @@
         - python-dev
         - nginx
         - python3
-        - python3-pip
+        - python-pip
         - python3.4-venv
         - git
         - gunicorn
 
     - name: Clone the Imager App to the Home Directory
-      git: clone=yes repo=https://github.com/clair3st/django-imager.git dest=/home/ubuntu/ version=deployment
+      git: clone=yes repo=https://github.com/clair3st/django-imager.git dest=/home/ubuntu/django-imager version=deployment
 
     - name: Create a virtual environment in the Imager app repo
       command: python3 -m venv ENV
-    
+      become: yes
+      become_method: sudo
+
     - name: Activate virtual environment in the Imager app repo
-      command: source ENV/bin/activate
-  
-    - name: Install imager to the virtualenv
-      pip: install -r requirements.pip
+      command: source ~/ENV/bin/activate
+      become: yes
+      become_method: sudo
+
+    - name: Install the packages specified in requirements.pip in the Python 3 environment
+      pip: virtualenv=/home/ubuntu/ENV requirements=/home/ubuntu/django-imager/requirements.pip
 
     - name: Register the old default file
       stat: path=/etc/nginx/sites-available/default.old
