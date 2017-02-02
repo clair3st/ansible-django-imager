@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name ec2-35-165-254-84.us-west-2.compute.amazonaws.com;
+    server_name ec2-52-14-94-237.us-east-2.compute.amazonaws.com;
     access_log  /var/log/nginx/django.log;
     client_max_body_size 500M;
 
@@ -12,10 +12,11 @@ server {
     }
 
     location /static/ {
-        root /home/ubuntu/django-imager/imagersite;
+        root /home/ubuntu/django-imager/imagersite/imagersite;
     }
 
     location /media/ {
-        root /home/ubuntu/django-imager/imagersite;
+        autoindex on;
+        alias /home/ubuntu/django-imager/imagersite/media/;
     }
 }
