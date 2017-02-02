@@ -3,16 +3,16 @@
   remote_user: ubuntu
 
   vars:
+    vars_files:
+    - vars.yml
     env:
-      DATABASE_NAME: 'imagersite_db'
-      USER_NAME: 'imagersite'
-      DB_PASSWORD: 'W0rdpa88'
-      HOST: 'example-db.cdmqe2srdqbh.us-east-2.rds.amazonaws.com'
-      SECRET_KEY: '2t#jmg22gz)dxy%u%7zk=2sb-94kr8znov(8t)a!$bsrnlt^_6'
-      EMAIL_PASSWORD: 'learnmorefaster'
-      DEBUG: 'False'
-      ALLOWED_HOSTS: 'ec2-52-14-94-237.us-east-2.compute.amazonaws.com'
-
+      DATABASE_NAME: {{db_name}}
+      USER_NAME: {{db_user}}
+      DB_PASSWORD: {{db_password}}
+      HOST: {{db_host}}
+      SECRET_KEY: {{secret_key}}
+      EMAIL_PASSWORD: {{email_password}}
+      ALLOWED_HOSTS: {{allowed_host}}
   tasks:
     - name: Update the Ubuntu machine with all the latest stuff
       apt: update_cache=yes
@@ -48,36 +48,36 @@
         - libpq-dev
 
     - name: Clone the Imager App to the Home Directory
-      git: clone=yes repo=https://github.com/clair3st/django-imager.git dest=/home/ubuntu/django-imager version=deployment
+      git: clone=yes repo={{project_repo}} dest={{install_root}} version={{branch}}
 
     - name: Manually create the initial virtualenv
-      command: virtualenv /home/ubuntu/ENV -p python3.4 creates="/home/ubuntu/ENV"
+      command: virtualenv {{env_path}} -p python3.4 creates="{{env_path}}"
 
     - name: Install the packages specified in requirements.pip in the Python 3 environment
       become: yes
       become_method: sudo
       pip: 
-        requirements: /home/ubuntu/django-imager/requirements.pip
-        virtualenv: /home/ubuntu/ENV
+        requirements: "{{install_root}}"/requirements.pip
+        virtualenv: "{{env_path}}"
         # virtualenv_python: python3.4
 
     - name: Install gunicorn to the virtualenv
       become: yes
       become_method: sudo
-      pip: virtualenv=/home/ubuntu/ENV name=gunicorn
+      pip: virtualenv={{env_path}} name=gunicorn
 
     - name: Migrate Django models to database
       django_manage:
         command: migrate
-        app_path: /home/ubuntu/django-imager/imagersite/
-        virtualenv: /home/ubuntu/ENV/
+        app_path: "{{ install_root }}"/"{{ project_name }}"
+        virtualenv: "{{env_path}}"
       environment: "{{env}}"
 
     - name: Change permissions on media folder
       become: yes
       become_method: sudo
       file: 
-        path: /home/ubuntu/django-imager/imagersite/media
+        path: "{{media_root}}"
         state: touch
         mode: 0777
         
@@ -92,7 +92,7 @@
       become_method: sudo
 
     - name: Create a new default file for nginx
-      template: src=simple_nginx_config dest=/etc/nginx/sites-available/default
+      template: src=simple_nginx_config.j2 dest=/etc/nginx/sites-available/default
       become: yes
       become_method: sudo
 
@@ -102,11 +102,11 @@
       become_method: sudo
 
     - name: Copy upstart script into /etc/init/
-      template: src=imagersite.conf dest=/etc/init/imagersite.conf
+      template: src={{project_name}}.j2 dest=/etc/init/{{project_name}}.j2
       become: yes
       become_method: sudo
 
     - name: Restart the imager upstart job
-      service: name=imagersite state=restarted
+      service: name={{project_name}} state=restarted
       become: yes
       become_method: sudo
