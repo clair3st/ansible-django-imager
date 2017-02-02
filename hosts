@@ -1,5 +1,5 @@
-[us-west-2]
-35.165.254.84
+[us-east-2]
+52.14.94.237
 
 [localhost]
 127.0.0.1
@@ -7,8 +7,9 @@
 [localhost:vars]
 ansible_connection=local
 
-[us-west-2:vars]
+[us-east-2:vars]
 ansible_ssh_user=ubuntu 
-ansible_ssh_private_key_file=~/.ssh/colin_cf.pem
+ansible_ssh_private_key_file=~/.ssh/claires-key.pem
 envname=/home/ubuntu/
-server_dns=ec2-35-165-254-84.us-west-2.compute.amazonaws.com
+server_dns=ec2-52-14-94-237.us-east-2.compute.amazonaws.com
+
