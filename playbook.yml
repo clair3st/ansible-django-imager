@@ -6,13 +6,15 @@
     vars_files:
     - vars.yml
     env:
-      DATABASE_NAME: {{db_name}}
-      USER_NAME: {{db_user}}
-      DB_PASSWORD: {{db_password}}
-      HOST: {{db_host}}
-      SECRET_KEY: {{secret_key}}
-      EMAIL_PASSWORD: {{email_password}}
-      ALLOWED_HOSTS: {{allowed_host}}
+      DATABASE_NAME: "{{db_name}}"
+      USER_NAME: "{{db_user}}"
+      DB_PASSWORD: "{{db_password}}"
+      HOST: "{{db_host}}"
+      SECRET_KEY: "{{secret_key}}"
+      EMAIL_PASSWORD: "{{email_password}}"
+      ALLOWED_HOSTS: "{{allowed_host}}"
+      SOCIAL_AUTH_GITHUB_KEY: '{{social_auth_github_key}}'
+      SOCIAL_AUTH_GITHUB_SECRET: '{{social_auth_github_secret}}'
   tasks:
     - name: Update the Ubuntu machine with all the latest stuff
       apt: update_cache=yes
@@ -69,7 +71,7 @@
     - name: Migrate Django models to database
       django_manage:
         command: migrate
-        app_path: "{{ install_root }}"/"{{ project_name }}"
+        app_path: "{{ install_root }}/{{ project_name }}"
         virtualenv: "{{env_path}}"
       environment: "{{env}}"
 
