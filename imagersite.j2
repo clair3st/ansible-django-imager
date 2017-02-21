@@ -13,5 +13,8 @@ env HOST={{db_host}}
 env SECRET_KEY={{secret_key}}
 env EMAIL_PASSWORD={{email_password}}
 env ALLOWED_HOSTS={{allowed_host}}
+env SOCIAL_AUTH_GITHUB_KEY={{social_auth_github_key}}
+env SOCIAL_AUTH_GITHUB_SECRET={{social_auth_github_secret}}
+
 
 exec {{env_path}}/bin/gunicorn -b 127.0.0.1:8000 -w 4 {{wsgi_module}}:application
